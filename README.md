@@ -2,6 +2,8 @@
 
 API Java Spring Boot para receber notificações de emails específicos no WhatsApp via integração com n8n.
 
+🚀 **Deploy automático configurado com GitHub Actions!**
+
 ## 🎯 Funcionalidades
 
 - ✅ Cadastrar monitores de email (email + remetente + WhatsApp)
