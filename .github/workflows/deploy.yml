@@ -31,10 +31,16 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > private_key
         chmod 600 private_key
         
+        echo "Testing SSH connection..."
+        ssh -i private_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 ubuntu@$HOST "echo 'SSH connection successful!'"
+        
+        echo "Creating app directory..."
         ssh -i private_key -o StrictHostKeyChecking=no ubuntu@$HOST "mkdir -p /home/ubuntu/app"
         
+        echo "Uploading JAR file..."
         scp -i private_key -o StrictHostKeyChecking=no target/email-notifier-api-1.0.0.jar ubuntu@$HOST:/home/ubuntu/app/
         
+        echo "Restarting service..."
         ssh -i private_key -o StrictHostKeyChecking=no ubuntu@$HOST "sudo systemctl restart email-notifier || echo 'Service not configured yet'"
         
         rm -f private_key
