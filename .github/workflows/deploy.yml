@@ -23,7 +23,7 @@ jobs:
     - name: Build with Maven
       run: mvn clean package -DskipTests
     
-    - name: Deploy to Oracle Cloud
+    - name: Setup VM and Deploy
       env:
         SSH_PRIVATE_KEY: ${{ secrets.ORACLE_SSH_KEY }}
         HOST: ${{ secrets.ORACLE_HOST }}
@@ -31,8 +31,12 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > private_key
         chmod 600 private_key
         
-        echo "Testing SSH connection..."
-        ssh -i private_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 ubuntu@$HOST "echo 'SSH connection successful!'"
+        echo "Checking if Java is installed..."
+        ssh -i private_key -o StrictHostKeyChecking=no ubuntu@$HOST "java -version || (
+          echo 'Installing Java 17...' &&
+          sudo apt update &&
+          sudo apt install -y openjdk-17-jdk
+        )"
         
         echo "Creating app directory..."
         ssh -i private_key -o StrictHostKeyChecking=no ubuntu@$HOST "mkdir -p /home/ubuntu/app"
@@ -40,7 +44,41 @@ jobs:
         echo "Uploading JAR file..."
         scp -i private_key -o StrictHostKeyChecking=no target/email-notifier-api-1.0.0.jar ubuntu@$HOST:/home/ubuntu/app/
         
-        echo "Restarting service..."
-        ssh -i private_key -o StrictHostKeyChecking=no ubuntu@$HOST "sudo systemctl restart email-notifier || echo 'Service not configured yet'"
+        echo "Configuring systemd service..."
+        ssh -i private_key -o StrictHostKeyChecking=no ubuntu@$HOST "sudo tee /etc/systemd/system/email-notifier.service > /dev/null << 'EOF'
+        [Unit]
+        Description=Email Notifier API
+        After=network.target
+        
+        [Service]
+        Type=simple
+        User=ubuntu
+        WorkingDirectory=/home/ubuntu/app
+        ExecStart=/usr/bin/java -Xmx512m -jar /home/ubuntu/app/email-notifier-api-1.0.0.jar
+        Restart=always
+        RestartSec=10
+        
+        [Install]
+        WantedBy=multi-user.target
+        EOF
+        "
+        
+        echo "Starting service..."
+        ssh -i private_key -o StrictHostKeyChecking=no ubuntu@$HOST "
+          sudo systemctl daemon-reload &&
+          sudo systemctl enable email-notifier &&
+          sudo systemctl restart email-notifier &&
+          sleep 5 &&
+          sudo systemctl status email-notifier
+        "
+        
+        echo "Configuring firewall..."
+        ssh -i private_key -o StrictHostKeyChecking=no ubuntu@$HOST "
+          sudo ufw allow 22/tcp &&
+          sudo ufw allow 8080/tcp &&
+          sudo ufw --force enable || true
+        "
         
         rm -f private_key
+        
+        echo "✅ Deploy completed! API available at: http://$HOST:8080"
