@@ -1,0 +1,148 @@
+{
+  "info": {
+    "name": "Email Notifier API",
+    "description": "API para notificações Email → WhatsApp",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Monitors",
+      "item": [
+        {
+          "name": "Create Monitor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alertas de Vendas\",\n  \"monitoredEmail\": \"meuemail@gmail.com\",\n  \"senderFilter\": \"vendas@loja.com\",\n  \"whatsappNumber\": \"5511999999999\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/monitors",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "monitors"]
+            }
+          }
+        },
+        {
+          "name": "List All Monitors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/monitors",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "monitors"]
+            }
+          }
+        },
+        {
+          "name": "Get Monitor by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/monitors/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "monitors", "1"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Monitor Active",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "http://localhost:8080/api/monitors/1/toggle",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "monitors", "1", "toggle"]
+            }
+          }
+        },
+        {
+          "name": "Delete Monitor",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:8080/api/monitors/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "monitors", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List All Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Get Notifications by Monitor",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/notifications/monitor/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "notifications", "monitor", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhook",
+      "item": [
+        {
+          "name": "Email Received (n8n webhook)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"vendas@loja.com\",\n  \"to\": \"meuemail@gmail.com\",\n  \"subject\": \"Nova venda realizada!\",\n  \"body\": \"Você vendeu 1x Produto XYZ por R$ 150,00. Parabéns!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/webhook/email-received",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "webhook", "email-received"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
